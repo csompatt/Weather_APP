@@ -13,7 +13,6 @@
           <i class=" rain-chance__icon fa-solid fa-droplet"></i>
           <span>{{ hour.rainChance }}<span class="list__item__unit">%</span></span>
         </span>
-
       </li>
     </ul>
   </section>
@@ -54,7 +53,6 @@ export default {
 
 .hourly-forecast__list__item {
   flex-direction: column;
-  font-size: 1rem;
   font-weight: 400;
 }
 
@@ -67,14 +65,17 @@ export default {
   margin-top: .3rem;
 }
 
+.list__item__unit,
+.rain-chance__icon {
+  font-size: .6rem;
+}
+
 .list__item__unit {
-  font-size: .7rem;
   margin-left: .1rem;
   font-weight: 300;
 }
 
 .rain-chance__icon {
   margin-right: .3rem;
-  font-size: .6rem;
 }
 </style>

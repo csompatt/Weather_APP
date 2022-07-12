@@ -1,26 +1,25 @@
 <template>
-  <section class="weekly-forecast">
-    <div class="weekly-forecast__swiper-wrap">
-      <swiper class="swiper" :modules="modules" :slides-per-view="1" :pagination="{ clickable: true }"
-        @swiper="onSwiper" @slideChange="onSlideChange">
+  <section class="daily-forecast">
+    <div class="daily-forecast__swiper-wrap">
+      <swiper class="swiper" :modules="modules" :slides-per-view="1" :pagination="{ clickable: true }">
         <swiper-slide class="swiper__slide" v-for="dailyWeather in dailyForecast" :key="dailyWeather">
           <div class="swiper__slide__item__wrap">
             <div class="slide__item">
-              <div class="weekly-forecast__infos">
-                <p class="weekly-forecast__infos__item">
+              <div class="daily-forecast__infos">
+                <p class="daily-forecast__infos__item">
                   {{ dailyWeather.date }}
                 </p>
-                <p class="weekly-forecast__infos__item">
+                <p class="daily-forecast__infos__item">
                   {{ dailyWeather.minTemp }}
                   <sup>o</sup>C -
                   {{ dailyWeather.maxTemp }}
                   <sup>o</sup>C
                 </p>
-                <p class="weekly-forecast__infos__item" v-if="dailyWeather.rainChance > 0">
+                <p class="daily-forecast__infos__item" v-if="dailyWeather.rainChance > 0">
                   Rain chance: {{ dailyWeather.rainChance }}%
                 </p>
               </div>
-              <div class="weekly-forecast__icon"><img :src="dailyWeather.icon" alt="Weekly forecast weather icon.">
+              <div><img :src="dailyWeather.icon" alt="Weekly forecast weather icon.">
               </div>
             </div>
           </div>
@@ -49,15 +48,7 @@ export default {
     SwiperSlide,
   },
   setup() {
-    const onSwiper = (swiper) => {
-      console.log(swiper);
-    };
-    const onSlideChange = () => {
-      console.log('slide change');
-    };
     return {
-      onSwiper,
-      onSlideChange,
       modules: [Pagination],
     }
   }
@@ -65,19 +56,20 @@ export default {
 </script>
 
 <style scoped>
-.weekly-forecast {
+.daily-forecast {
   max-height: 100%;
 }
 
-.weekly-forecast__swiper-wrap {
-  max-width: 100%;
+.daily-forecast__swiper-wrap {
   display: block;
   margin: 0 auto;
+  max-width: 100%;
 }
 
-.swiper {
-  width: 100%;
-  height: 100%;
+
+.swiper,
+.slide-item {
+  width: 100%
 }
 
 .swiper__slide,
@@ -85,19 +77,22 @@ export default {
   padding: .5rem;
 }
 
+.swiper {
+  height: 100%;
+}
+
 .slide__item {
   justify-content: space-around;
   align-items: center;
   display: flex;
   margin-bottom: 1rem;
-  width: 100%;
 }
 
-.weekly-forecast__infos>.weekly-forecast__infos__item:not(:nth-child(2)) {
+.daily-forecast__infos>.daily-forecast__infos__item:not(:nth-child(2)) {
   font-size: .7rem;
 }
 
-.weekly-forecast__infos>.weekly-forecast__infos__item:nth-child(2) {
+.daily-forecast__infos>.daily-forecast__infos__item:nth-child(2) {
   margin: .3rem 0;
 }
 </style>

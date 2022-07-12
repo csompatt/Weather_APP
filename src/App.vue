@@ -1,33 +1,26 @@
 <template>
   <div class="app-layout">
     <header class="header">
-      <search-location @push-city-data="getWeather" :selected-city="returnedCity" @show-city-name="showCity">
+      <search-location @push-city-data="getWeather" :selected-city="city" @show-city-name="showCity">
       </search-location>
-
     </header>
-    <current-weather :weather-today="weatherNow" :today-datum="todayDate"></current-weather>
-
-
+    <current-weather :weather-today="weatherNow" :months-array="months" @click="focusOut"></current-weather>
     <section class="forecast">
-      <button class="forecast__switch-forecast-btn" @click="toggleForecast"><span class="switch-forecast-btn__text"
-          :class="(weeklyAndHourlyForecastSwitcher) ? 'highlight' : ''">Today</span><span
-          class="switch-forecast-btn__separate-line"> | </span><span class="switch-forecast-btn__text"
-          :class="(!weeklyAndHourlyForecastSwitcher) ? 'highlight' : ''">Next 7 Days</span>
+      <button class="forecast__toggle-forecast-btn" @click="toggleForecast">
+        <span :class="(dailyAndHourlyForecastSwitcher) ? 'highlight' : ''">Today</span>
+        <span class="toggle-forecast-btn__separate-line"> | </span>
+        <span :class="(!dailyAndHourlyForecastSwitcher) ? 'highlight' : ''">Next 7 Days</span>
       </button>
-      <hourly-weather v-if="weeklyAndHourlyForecastSwitcher" :weather-hourly="hourlyWeather"></hourly-weather>
-      <weekly-forecast v-if="!weeklyAndHourlyForecastSwitcher" class="weeklyForecast"
-        :daily-forecast="this.dailyForecast"></weekly-forecast>
+      <hourly-weather v-if="dailyAndHourlyForecastSwitcher" :weather-hourly="hourlyWeather"></hourly-weather>
+      <daily-forecast v-if="!dailyAndHourlyForecastSwitcher" :daily-forecast="this.dailyForecast">
+      </daily-forecast>
     </section>
   </div>
 </template>
 
-
-
 <script>
 
 import { defineAsyncComponent } from 'vue'
-
-
 import currentWeather from './components/currentWeather.vue'
 
 export default {
@@ -36,8 +29,8 @@ export default {
     searchLocation: defineAsyncComponent(() =>
       import('./components/searchLocation.vue')
     ),
-    weeklyForecast: defineAsyncComponent(() =>
-      import('./components/weeklyForecast.vue')
+    dailyForecast: defineAsyncComponent(() =>
+      import('./components/dailyForecast.vue')
     ),
     hourlyWeather: defineAsyncComponent(() =>
       import('./components/hourlyForecast.vue')
@@ -49,63 +42,53 @@ export default {
       todayDate: '',
       city: "",
       cityDisplay: false,
-      weeklyAndHourlyForecastSwitcher: true,
+      dailyAndHourlyForecastSwitcher: true,
       weatherNow: {},
       hourlyWeather: [],
       dailyForecast: [],
-      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'],
     }
   },
-  computed: {
-    returnedCity() {
-      return this.city;
-    }
-  },
-  beforeMount() {
-    const that = this;
 
-    const todayDate = () => this.months[new Date().getMonth()] + ',' + new Date().getDate();
-    this.todayDate = todayDate();
+  // Get the gps location and fetch the weather datas and city name or alert an error message.
+
+  mounted() {
+    const that = this;
 
     navigator.geolocation.getCurrentPosition(success, error);
 
-    var position;
+    let position;
 
     function success(p) {
       position = p;
 
-      fetch('https://api.geoapify.com/v1/geocode/reverse?lat=' + position.coords.latitude + '&lon=' + position.coords.longitude + '&format=json&apiKey=a2cc5a2783724fdf9b2aeee18c4157a3')
-        .then((response) => response.json())
+      fetch('https://locationiq.com/v1/reverse?key=pk.c92bde9b8fe296c7217ce940e120f424&lat=' + position.coords.latitude + '&lon=' + position.coords.longitude + '&format=json')
+        .then(response => response.json())
         .then(data => {
-          let cityName = data.results[0].city;
+          const cityName = data.address.town;
 
           that.getWeather(cityName, position.coords.latitude, position.coords.longitude)
           that.city = cityName;
-
-        });
-
-
-
-
+        })
     }
-
     function error() {
       alert("We can't recognize your location, please use manual searching.");
     }
   },
-
   methods: {
+    focusOut() {
+      this.isInputFocus = false;
+    },
     showCity() {
       this.cityDisplay = false;
     },
-
     getWeather(city, latitude, longitude) {
       this.city = city;
       this.cityDisplay = !this.cityDisplay;
 
-      // Add the city name to the header
 
       // fetch the weather datas
+
       fetch('https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&exclude=minutely&units=metric&appid=171b9f9ea8f2cc3e669f62c7264f0397')
         .then((response) => response.json())
         .then((data) => {
@@ -116,7 +99,7 @@ export default {
             .then(data => {
 
               const airQualityDescribe = ['Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
-              let airQuality = airQualityDescribe[data.list[0].main.aqi];
+              const airQuality = airQualityDescribe[data.list[0].main.aqi];
               this.weatherNow['airQuality'] = airQuality;
 
             })
@@ -152,9 +135,9 @@ export default {
           const datum = (dt) => new Date(dt * 1000);
 
           for (let i = 0; 24 > i; i++) {
-            let hourlyData = data.hourly[i];
+            const hourlyData = data.hourly[i];
 
-            let hourlyObject = {
+            const hourlyObject = {
               time: datum(hourlyData.dt).getHours(),
               icon: 'https://openweathermap.org/img/wn/' + hourlyData.weather[0].icon + '.png',
               rainChance: Math.round(hourlyData.pop * 100),
@@ -169,12 +152,12 @@ export default {
           this.dailyForecast = [];
 
           for (let i = 1; data.daily.length > i; i++) {
-            let dailyData = data.daily[i];
-            let dailyDatum = datum(dailyData.dt);
+            const dailyData = data.daily[i];
+            const dailyDatum = datum(dailyData.dt);
 
 
-            let dailyObject = {
-              date: dailyDatum.getFullYear() + ' / ' + (this.months[dailyDatum.getMonth()]) + ' / ' + (dailyDatum.getDate() - 1),
+            const dailyObject = {
+              date: dailyDatum.getFullYear() + ' - ' + (this.months[dailyDatum.getMonth()]) + ' - ' + (dailyDatum.getDate() - 1),
               icon: 'https://openweathermap.org/img/wn/' + dailyData.weather[0].icon + '.png',
               rainChance: Math.floor(dailyData.pop * 100),
               maxTemp: Math.round(dailyData.temp.max),
@@ -184,15 +167,13 @@ export default {
           }
         });
     },
+    // Change the display between the daily and hourly forecast
     toggleForecast() {
-      this.weeklyAndHourlyForecastSwitcher = !this.weeklyAndHourlyForecastSwitcher
+      this.dailyAndHourlyForecastSwitcher = !this.dailyAndHourlyForecastSwitcher
     }
   },
-
 }
 </script>
-
-
 
 <style scoped>
 .app-layout {
@@ -214,66 +195,31 @@ export default {
 }
 
 .header {
-  display: flex;
   align-items: center;
+  display: flex;
+  width: 100%;
   padding: 0 1rem;
-}
-
-.header__location-container {
-  text-align: end;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-
-.header {
-  width: 100%;
   border-radius: 1rem;
-}
-
-.header__location__icon {
-  margin-left: 1rem;
-}
-
-.header__location__city-name {
-  display: inline-block;
-  font-size: 1rem;
 }
 
 .forecast {
   border-radius: 2rem;
 }
 
-
-
-
-
-.autocomplete-container {
-  position: relative;
-}
-
-.forecast__switch-forecast-btn {
-  margin-left: 2rem;
-  margin-top: 1rem;
-  font-weight: 700;
-  font-size: .8rem;
-}
-
-.switch-forecast-btn__text {
+.forecast__toggle-forecast-btn {
+  margin: 1rem 0 0 2rem;
   font-size: .8rem;
   font-weight: 200;
+}
+
+.toggle-forecast-btn__separate-line {
+  font-size: 1.3rem;
+  font-weight: 100;
 }
 
 .highlight {
   font-size: 1.2rem;
   font-weight: 500;
-}
-
-.switch-forecast-btn__separate-line {
-  font-size: 1.3rem;
-  font-weight: 100;
 }
 </style>
 

@@ -3,8 +3,8 @@
     <section class="current-weather">
       <div class="current-weather__info-container">
         <div class="current-weather__info-items-container">
-          <h4 class="current-date info-name"> {{ todayDatum }}</h4>
-          <img class="current-weather__icon" :src="weatherToday.icon" alt="">
+          <h4 class="current-date"> {{ todayDatum }}</h4>
+          <img class="current-weather__icon" :src="weatherToday.icon" alt="Current weather icon">
         </div>
         <h2 class="info__item"> {{ weatherToday.text }}</h2>
       </div>
@@ -37,17 +37,26 @@
 
 export default {
   name: 'currentWeather',
-  props: ['weatherToday', 'todayDatum'],
+  props: ['weatherToday', 'monthsArray'],
+  computed: {
+    todayDatum() {
+      return this.monthsArray[new Date().getMonth()] + ', ' + new Date().getDate();
+    }
+  }
 };
 </script>
 
 <style>
+.current-weather,
+.current-weather__container {
+  display: grid;
+  grid-row-gap: .5rem;
+}
+
 .current-weather__container {
   grid-template-columns: 60% 1fr;
   grid-template-rows: 35% 1fr;
   grid-column-gap: .5rem;
-  grid-row-gap: .5rem;
-  display: grid;
   overflow: hidden;
 }
 
@@ -57,8 +66,7 @@ export default {
   grid-template-columns: 100%;
   grid-template-rows: repeat(4, 1fr);
   grid-column-gap: 0;
-  grid-row-gap: .5rem;
-  display: grid;
+  padding-left: 2rem;
 }
 
 .current-weather__info-items-container {
@@ -106,15 +114,13 @@ export default {
   font-weight: 600;
 }
 
-.current-weather {
-  padding-left: 2rem;
-}
 
 .current-weather__temperature,
 .current-weather__uv-index {
   padding-left: 1.5rem;
 }
 
+.current-date,
 .info-name {
   font-weight: 300;
   font-size: .8rem;
