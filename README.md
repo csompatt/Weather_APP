@@ -14,15 +14,13 @@ https://csompatt.github.io/weather_app/
 ## How it work
 
 ```
-After the pageloaded we could give permission to the application to get our gps position and we get back from api request the -
+After the page load, the application asks our permission to get our GPS position and we get back from API request the –
 
   - current weather,
   - hourly forecast,
-  - 7 day daily forecast.
+  - 7-day daily forecast.
   
-If we didn't give permission, we must to search our location manually. 
-The input field connected with an autocomplete api and listing the possible location result.
-After we click on a location we get the weather forecast from an api request.
-
-
+If we didn't give permission, we have to search our location manually. 
+The input field is connected with an autocomplete API that lists the possible location result.
+After we have selected our location, we get the weather forecast via an API request.
 ```
